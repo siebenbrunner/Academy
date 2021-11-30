@@ -1,15 +1,15 @@
-const { expect } = require("chai");
+const { expect, use } = require("chai");
 const { ethers } = require("hardhat");
 const {
-  BN, // Big Number support
   constants, // Common constants, like the zero address and largest integers
-  expectEvent, // Assertions for emitted events
   expectRevert, // Assertions for transactions that should fail
 } = require("@openzeppelin/test-helpers");
 
-//https://www.chaijs.com/guide/styles/
+const { solidity } = require("ethereum-waffle");
+use(solidity);
 
-//https://docs.openzeppelin.com/test-helpers/0.5/
+// https://www.chaijs.com/guide/styles/
+// https://ethereum-waffle.readthedocs.io/en/latest/matchers.html
 
 describe("Volcano Coin", () => {
   let volcanoContract;
@@ -43,7 +43,7 @@ describe("Volcano Coin", () => {
   it("increases allowance for address1", async () => {});
   it("decreases allowance for address1", async () => {});
   it("emits an event when increasing allowance", async () => {});
-  it("revets increaseAllowance when sender does not have enough balance", async () => {});
+  it("revets decreaseAllowance when trying decrease below 0", async () => {});
 
   it("updates balances on successful transfer from owner to addr1", async () => {});
   it("revets transfer when sender does not have enough balance", async () => {});
