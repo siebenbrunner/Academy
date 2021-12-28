@@ -24,17 +24,56 @@ describe("DeFi", () => {
     USDC_TokenContract = await ethers.getContractAt("ERC20", USDCAddress);
     const symbol = await DAI_TokenContract.symbol();
     console.log(symbol);
+
     const DeFi = await ethers.getContractFactory("DeFi");
+
 
     await DAI_TokenContract.connect(whale).transfer(
       owner.address,
-      BigInt(INITIAL_AMOUNT)
+      BigInt(INITIAL_AMOUNT*2)
     );
-
     DeFi_Instance = await DeFi.deploy();
   });
 
-  it("should check transfer succeeded", async () => {});
-  it("should sendDAI to contract", async () => {});
-  it("should make a swap", async () => {});
+  it("should check transfer succeeded", async () => {
+    let owner_balance = await DAI_TokenContract.balanceOf(owner.address);
+    expect(owner_balance).to.be.at.least(INITIAL_AMOUNT);
+  });
+
+  it("should sendDAI to contract", async () => {
+    tx = await DAI_TokenContract.connect(owner).transfer(
+      DeFi_Instance.address,
+      INITIAL_AMOUNT
+    );
+    await tx.wait();
+    expect(await DAI_TokenContract.balanceOf(DeFi_Instance.address)).to.equal(INITIAL_AMOUNT);
+  });
+
+  it("should make a swap", async () => {
+    let USDCbalanceBefore = await USDC_TokenContract.balanceOf(owner.address);
+    tx = await DeFi_Instance.connect(owner).swapDAItoUSDC(INITIAL_AMOUNT);
+    await tx.wait();
+    let USDCbalanceAfter = await USDC_TokenContract.balanceOf(owner.address);
+    expect(USDCbalanceAfter-USDCbalanceBefore).to.be.at.least(1);
+  });
+  
+
+  it("should swap Dai for UNI", async () => {
+    UNI_TokenContract = await ethers.getContractAt("ERC20", "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984");
+    let UNIbalanceBefore = await UNI_TokenContract.balanceOf(owner.address);
+    let tx1 = await DAI_TokenContract.connect(owner).transfer(
+      DeFi_Instance.address,
+      INITIAL_AMOUNT
+    );
+    await tx1.wait();
+    let tx2 = await DeFi_Instance.connect(owner).swapTokens(
+      DAI_TokenContract.address,
+      UNI_TokenContract.address,
+      INITIAL_AMOUNT
+    );
+    await tx2.wait();
+    let UNIbalanceAfter = await UNI_TokenContract.balanceOf(owner.address);
+    expect(UNIbalanceAfter-UNIbalanceBefore).to.be.at.least(1);
+  });
+
 });
